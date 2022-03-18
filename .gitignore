@@ -1,5 +1,5 @@
 .env
-vegeket/secrets/env*
+vegeket/secrets/.env*
 venv/
 migrations
 __pycache__
