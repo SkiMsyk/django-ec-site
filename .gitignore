@@ -1,0 +1,5 @@
+.env
+vegeket/secrets/
+venv/
+migrations
+__pycache__

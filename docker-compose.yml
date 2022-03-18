@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    volumes:
+      - ./vegeket:/vegeket
+    tty: true
+    ports:
+      - 8000:8000
