@@ -1,6 +1,0 @@
-.env.dev
-.env.prod
-venv/
-migrations
-__pycache__
-db.sqlite3
