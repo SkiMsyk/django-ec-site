@@ -28,6 +28,17 @@ class CartListView(ListView):
         return super().get_queryset()
     
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context["total"] = self.total
+            context["tax_included_total"] = self.tax_included_total
+        except Exception:
+            pass    
+        return context
+        
+    
+    
 class AddCartView(View):
     def post(self, request):
         item_pk = request.POST.get('item_pk')
