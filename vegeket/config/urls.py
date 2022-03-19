@@ -5,6 +5,11 @@ from base import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     
+    # Pay
+    path('pay/checkout/', views.PayWithStripe.as_view()),
+    path('pay/success/', views.PaySuccessView.as_view()),
+    path('pay/cancel/', views.PayCancelView.as_view()),
+    
     # Items
     path('items/<str:pk>/', views.ItemDetailView.as_view()),
     
