@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<h2> Cart </h2>
+
+{% for object in object_list %}
+
+{{forloop.counter}}
+{{object.name}}
+{{object.price}}
+{{object.quantity}}
+{{object.subtotal}}
+<a href="/cart/remove/{{object.pk}}/">削除</a>
+
+{% endfor %}
+
+<p>小計 - ¥{{total}}</p>
+<p>税込計 - ¥{{tax_include_total}}</p>
+
+<!-- Checkoutボタン -->
+<form action="/pay/checkout/" method="POST">
+    {% csrf_token %}
+    <button type="submit">Checkout</button>
+</form>
+
+{% endblock %}

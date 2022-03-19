@@ -8,6 +8,9 @@ urlpatterns = [
     # Items
     path('items/<str:pk>/', views.ItemDetailView.as_view()),
     
+    # Cart
+    path('cart/', views.CartListView.as_view()),
+    
     # index
     path('', views.IndexListView.as_view()),
 ]
