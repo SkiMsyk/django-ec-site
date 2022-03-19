@@ -137,3 +137,9 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Tax rate
 TAX_RATE = 0.1
+
+# Stripe API Key
+STRIPE_API_SECRET_KEY = env.str('STRIPE_API_SECRET_KEY')
+
+# スキーマ&ドメイン
+MY_URL = env.str('MY_URL')
