@@ -1,10 +1,9 @@
-from base.forms import UserCreationForm
 from django.contrib import admin
-from base.models import Item, Category, Tag, User
 from django.contrib.auth.models import Group
-from django.contrib.auth.admin import UserAdmin
 
-from base.models.account_models import Profile
+from base.models import Item, Category, Tag, User, Profile
+from django.contrib.auth.admin import UserAdmin
+from base.forms import UserCreationForm
 
 
 # modify admin sites
@@ -25,7 +24,7 @@ class ProfileInline(admin.StackedInline):
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password',)}),
-        (None, {'fields': ('is_active', 'is_admin',)}),
+        (None, {'fields': ('is_active', 'is_admin',)})
     )
     
     list_display = ('username', 'email', 'is_active',)
@@ -34,11 +33,10 @@ class CustomUserAdmin(UserAdmin):
     filter_horizontal = ()
     
     add_fieldsets = (
-        (None, {'fields': ('usename', 'email', 'is_active',)}),
+        (None, {'fields': ('username', 'email', 'password',)}),
     )
     
     add_form = UserCreationForm
-    
     inlines = (ProfileInline,)
 
 
@@ -47,6 +45,7 @@ admin.site.register(Item, ItemAdmin)
 admin.site.register(Category)
 admin.site.register(Tag)
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Profile)
 
 # making Group model invisible
 admin.site.unregister(Group)
