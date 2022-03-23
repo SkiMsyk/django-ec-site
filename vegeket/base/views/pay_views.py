@@ -107,9 +107,11 @@ class PayWithStripe(LoginRequiredMixin, View):
             )
             line_items.append(line_item)
             
+            # import ipdb; ipdb.set_trace()
+            
             # Orderモデルに渡すデータde-ta
             items.append({
-                'pk': item.pk,
+                'pk': str(item.pk), # json.dumpsでUUIDオブジェクトは使えない
                 'name': item.name,
                 'image': str(item.image),
                 'price': item.price,
@@ -133,7 +135,7 @@ class PayWithStripe(LoginRequiredMixin, View):
             )
             
         checkout_session = stripe.checkout.Session.create(
-            customer_email=request.email,
+            customer_email=request.user.email,
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
