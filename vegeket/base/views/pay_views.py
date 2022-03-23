@@ -1,10 +1,12 @@
 from django.shortcuts import redirect
 from django.views.generic import View, TemplateView
 from django.conf import settings
-from base.models import Item
+from base.models import Item, Order
 import stripe
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
+import json
 
 
 stripe.api_key = settings.STRIPE_API_SECRET_KEY
@@ -81,6 +83,7 @@ class PayWithStripe(LoginRequiredMixin, View):
         if cart is None or len(cart) == 0:
             return redirect('/')
         
+        items = [] # Orderモデルに渡すリスト
         line_items = []
         for item_pk, quantity in cart['items'].items():
             item = Item.objects.get(pk=item_pk)
@@ -89,8 +92,33 @@ class PayWithStripe(LoginRequiredMixin, View):
             )
             line_items.append(line_item)
             
+            # Orderモデルに渡すデータde-ta
+            items.append({
+                'pk': item.pk,
+                'name': item.name,
+                'image': str(item.image),
+                'price': item.price,
+                'quantity': quantity
+            })
+            
+            # 在庫と販売数の反映
+            # キャンセルされたら戻す
+            item.stock -= quantity
+            item.sold_count += quantity
+            item.save() # 反映をfix
+            
+            # 仮注文を作成
+            Order.objects.create(
+                user=request.user,
+                uid=request.user.pk,
+                items=json.dumps(items)
+                shipping=serializers.serialize("json", [request.user.profile]),
+                amount=cart['total'],
+                tax_included=cart['tax_included_total']
+            )
+            
         checkout_session = stripe.checkout.Session.create(
-            # customer_email=request.email,
+            customer_email=request.email,
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
