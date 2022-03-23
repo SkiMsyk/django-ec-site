@@ -126,7 +126,7 @@ class PayWithStripe(LoginRequiredMixin, View):
             Order.objects.create(
                 user=request.user,
                 uid=request.user.pk,
-                items=json.dumps(items)
+                items=json.dumps(items),
                 shipping=serializers.serialize("json", [request.user.profile]),
                 amount=cart['total'],
                 tax_included=cart['tax_included_total']
