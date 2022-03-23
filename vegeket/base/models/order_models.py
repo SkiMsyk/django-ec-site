@@ -8,7 +8,7 @@ def custom_timestamp_id():
     return dt.strftime('%Y%m%d%H%M%S%f')
 
 
-class Oder(models.Model):
+class Order(models.Model):
     id = models.CharField(default=custom_timestamp_id,
                           editable=False, primary_key=True,
                           max_length=50)
