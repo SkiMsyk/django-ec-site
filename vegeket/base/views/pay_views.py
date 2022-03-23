@@ -1,3 +1,4 @@
+from urllib import request
 from django.shortcuts import redirect
 from django.views.generic import View, TemplateView
 from django.conf import settings
@@ -24,9 +25,14 @@ tax_rate = stripe.TaxRate.create(
 class PaySuccessView(LoginRequiredMixin, TemplateView):
     template_name = 'pages/success.html'
     
+    
     def get(self, request, *args, **kwargs):
-        # 
-        
+        # 最新のOrderオブジェクトを取得して注文を確定
+        order = Order.objects.filter(
+            user=request.user).order_by('-created_at')[0]
+        order.is_confirmed = True
+        order.save()
+
         # delete items in the cart 
         del request.session['cart']
         
@@ -38,10 +44,19 @@ class PayCancelView(LoginRequiredMixin, TemplateView):
     
     def get(self, request, *args, **kwargs):
         # get latest Order-obj
-        
         # back to the previous state, stocks and sales number.
-        
         # is_confirmed == False => delete
+        order = Order.objects.filter(
+            user=request.user).order_by('-created_at')[0]
+        
+        for elem in json.loads(order.items):
+            item = Item.objects.get(pk=elem['pk'])
+            item.sold_count -= elem['quantity']
+            item.stock += elem['quantity']
+            item.save()
+        
+        if not order.is_confirmed:
+            order.delete()
         
         return super().get(request, *args, **kwargs)
         
