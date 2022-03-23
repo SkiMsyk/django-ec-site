@@ -28,4 +28,8 @@ urlpatterns = [
     
     # index
     path('', views.IndexListView.as_view()),
+    
+    # Order
+    path('orders/', views.OrderIndexView.as_view()),
+    path('orders/<str:pk>/', views.OrderDetailView.as_view())
 ]

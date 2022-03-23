@@ -1,10 +1,13 @@
+from urllib import request
 from django.shortcuts import redirect
 from django.views.generic import View, TemplateView
 from django.conf import settings
-from base.models import Item
+from base.models import Item, Order
 import stripe
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
+import json
 
 
 stripe.api_key = settings.STRIPE_API_SECRET_KEY
@@ -22,9 +25,14 @@ tax_rate = stripe.TaxRate.create(
 class PaySuccessView(LoginRequiredMixin, TemplateView):
     template_name = 'pages/success.html'
     
+    
     def get(self, request, *args, **kwargs):
-        # 
-        
+        # 最新のOrderオブジェクトを取得して注文を確定
+        order = Order.objects.filter(
+            user=request.user).order_by('-created_at')[0]
+        order.is_confirmed = True
+        order.save()
+
         # delete items in the cart 
         del request.session['cart']
         
@@ -36,10 +44,19 @@ class PayCancelView(LoginRequiredMixin, TemplateView):
     
     def get(self, request, *args, **kwargs):
         # get latest Order-obj
-        
         # back to the previous state, stocks and sales number.
-        
         # is_confirmed == False => delete
+        order = Order.objects.filter(
+            user=request.user).order_by('-created_at')[0]
+        
+        for elem in json.loads(order.items):
+            item = Item.objects.get(pk=elem['pk'])
+            item.sold_count -= elem['quantity']
+            item.stock += elem['quantity']
+            item.save()
+        
+        if not order.is_confirmed:
+            order.delete()
         
         return super().get(request, *args, **kwargs)
         
@@ -81,6 +98,7 @@ class PayWithStripe(LoginRequiredMixin, View):
         if cart is None or len(cart) == 0:
             return redirect('/')
         
+        items = [] # Orderモデルに渡すリスト
         line_items = []
         for item_pk, quantity in cart['items'].items():
             item = Item.objects.get(pk=item_pk)
@@ -89,8 +107,35 @@ class PayWithStripe(LoginRequiredMixin, View):
             )
             line_items.append(line_item)
             
+            # import ipdb; ipdb.set_trace()
+            
+            # Orderモデルに渡すデータde-ta
+            items.append({
+                'pk': str(item.pk), # json.dumpsでUUIDオブジェクトは使えない
+                'name': item.name,
+                'image': str(item.image),
+                'price': item.price,
+                'quantity': quantity
+            })
+            
+            # 在庫と販売数の反映
+            # キャンセルされたら戻す
+            item.stock -= quantity
+            item.sold_count += quantity
+            item.save() # 反映をfix
+            
+            # 仮注文を作成
+            Order.objects.create(
+                user=request.user,
+                uid=request.user.pk,
+                items=json.dumps(items),
+                shipping=serializers.serialize("json", [request.user.profile]),
+                amount=cart['total'],
+                tax_included=cart['tax_included_total']
+            )
+            
         checkout_session = stripe.checkout.Session.create(
-            # customer_email=request.email,
+            customer_email=request.user.email,
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
