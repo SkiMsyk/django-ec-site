@@ -17,7 +17,7 @@
             {{object.category.name}}
         </a>
         {% for tag in object.tags.all %}
-        <a href="/tags/{{tags.slug}}/" class="badge badge-pill badge-light">
+        <a href="/tags/{{tag.slug}}/" class="badge badge-pill badge-light">
           #{{tag}}
         </a>
         {% endfor %}

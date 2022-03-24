@@ -17,7 +17,7 @@ class CategoryListView(ListView):
     model = Item
     template_name = 'pages/list.html'
     paginate_by = 2
-    
+        
     def get_queryset(self):
         self.category = Category.objects.get(slug=self.kwargs['pk'])
         return Item.objects.filter(is_published=True, category=self.category)
