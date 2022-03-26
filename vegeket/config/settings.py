@@ -162,4 +162,5 @@ MESSAGE_TAGS = {
 
 # custom_context_processors.py 
 TITLE = 'VegeKet'
+SUB_TITLE = '野菜・果物のECサイトです'
 # custom_context_processors.py
