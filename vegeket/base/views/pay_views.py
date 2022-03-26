@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 import json
+from django.contrib import messages
 
 
 stripe.api_key = settings.STRIPE_API_SECRET_KEY
@@ -92,10 +93,12 @@ class PayWithStripe(LoginRequiredMixin, View):
     
     def post(self, request, *args, **kwargs):
         if not check_profile_filled(request.user.profile):
+            messages.error(self.request, '決済を完了するためにはプロフィールが埋まっている必要があります。')
             return redirect('/profile/')
         
         cart = request.session.get('cart', None)
         if cart is None or len(cart) == 0:
+            messages.error(self.request, 'カートが空です。')
             return redirect('/')
         
         items = [] # Orderモデルに渡すリスト
